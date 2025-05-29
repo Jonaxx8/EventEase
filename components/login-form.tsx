@@ -34,7 +34,7 @@ export function LoginForm({
     if (response.error) {
       setError(response.error);
     } else {
-      router.push("/protected");
+      router.push("/dashboard");
     }
     
     setIsLoading(false);

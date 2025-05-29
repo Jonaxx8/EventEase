@@ -34,7 +34,7 @@ export async function signUp(email: string, password: string): Promise<LoginResp
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/protected`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
       },
     });
 
