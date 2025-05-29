@@ -56,7 +56,6 @@ export function EventCalendar({ events }: EventCalendarProps) {
         <div className="flex flex-col md:flex-row">
           <div className="p-4">
             <Calendar
-              mode="single"
               selected={date}
               onSelect={setDate}
               className="rounded-md border-2"

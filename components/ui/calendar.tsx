@@ -2,73 +2,136 @@
 
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
-
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
+import { addDays, addMonths, format, startOfMonth, startOfWeek, eachDayOfInterval, isSameMonth, isSameDay, subMonths } from "date-fns"
+
+interface CalendarProps {
+  selected?: Date | undefined
+  onSelect?: (date: Date | undefined) => void
+  disabled?: (date: Date) => boolean
+  showOutsideDays?: boolean
+  className?: string
+  modifiers?: Record<string, (date: Date) => boolean>
+  modifiersStyles?: Record<string, React.CSSProperties>
+}
 
 function Calendar({
-  className,
-  classNames,
+  selected,
+  onSelect,
+  disabled,
+  modifiers = {},
+  modifiersStyles = {},
   showOutsideDays = true,
+  className,
   ...props
-}: React.ComponentProps<typeof DayPicker>) {
+}: CalendarProps) {
+  const [currentMonth, setCurrentMonth] = React.useState(new Date())
+  
+  const daysInMonth = React.useMemo(() => {
+    const start = startOfWeek(startOfMonth(currentMonth))
+    return eachDayOfInterval({
+      start,
+      end: addDays(start, 41)
+    })
+  }, [currentMonth])
+
+  const weekDays = React.useMemo(() => {
+    const start = startOfWeek(new Date())
+    return eachDayOfInterval({
+      start,
+      end: addDays(start, 6)
+    }).map(day => format(day, "EEE"))
+  }, [])
+
+  const handlePreviousMonth = () => {
+    setCurrentMonth(prev => subMonths(prev, 1))
+  }
+
+  const handleNextMonth = () => {
+    setCurrentMonth(prev => addMonths(prev, 1))
+  }
+
+  const handleSelectDate = (day: Date) => {
+    if (disabled?.(day)) return
+    onSelect?.(day)
+  }
+
   return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
-      classNames={{
-        months: "flex flex-col sm:flex-row gap-2",
-        month: "flex flex-col gap-4",
-        caption: "flex justify-center pt-1 relative items-center w-full",
-        caption_label: "text-sm font-medium",
-        nav: "flex items-center gap-1",
-        nav_button: cn(
-          buttonVariants({ variant: "outline" }),
-          "size-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-        ),
-        nav_button_previous: "absolute left-1",
-        nav_button_next: "absolute right-1",
-        table: "w-full border-collapse space-x-1",
-        head_row: "flex",
-        head_cell:
-          "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]",
-        row: "flex w-full mt-2",
-        cell: cn(
-          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-range-end)]:rounded-r-md",
-          props.mode === "range"
-            ? "[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
-            : "[&:has([aria-selected])]:rounded-md"
-        ),
-        day: cn(
-          buttonVariants({ variant: "ghost" }),
-          "size-8 p-0 font-normal aria-selected:opacity-100"
-        ),
-        day_range_start:
-          "day-range-start aria-selected:bg-primary aria-selected:text-primary-foreground",
-        day_range_end:
-          "day-range-end aria-selected:bg-primary aria-selected:text-primary-foreground",
-        day_selected:
-          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        day_today: "bg-accent text-accent-foreground",
-        day_outside:
-          "day-outside text-muted-foreground aria-selected:text-muted-foreground",
-        day_disabled: "text-muted-foreground opacity-50",
-        day_range_middle:
-          "aria-selected:bg-accent aria-selected:text-accent-foreground",
-        day_hidden: "invisible",
-        ...classNames,
-      }}
-      components={{
-        IconLeft: ({ className, ...props }) => (
-          <ChevronLeft className={cn("size-4", className)} {...props} />
-        ),
-        IconRight: ({ className, ...props }) => (
-          <ChevronRight className={cn("size-4", className)} {...props} />
-        ),
-      }}
-      {...props}
-    />
+    <div className={cn("p-3", className)} {...props}>
+      <div className="space-y-4">
+        <div className="flex justify-center pt-1 relative items-center">
+          <div className="text-sm font-medium">
+            {format(currentMonth, "MMMM yyyy")}
+          </div>
+          <div className="flex items-center gap-1 absolute right-1">
+            <button
+              onClick={handlePreviousMonth}
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "size-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+              )}
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+            <button
+              onClick={handleNextMonth}
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "size-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+              )}
+            >
+              <ChevronRight className="size-4" />
+            </button>
+          </div>
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {weekDays.map(day => (
+            <div
+              key={day}
+              className="text-muted-foreground text-center text-[0.8rem] font-normal"
+            >
+              {day}
+            </div>
+          ))}
+          {daysInMonth.map((day, i) => {
+            const isSelected = selected instanceof Date && isSameDay(day, selected)
+            const isOutsideMonth = !isSameMonth(day, currentMonth)
+            const isDisabled = disabled?.(day)
+            
+            // Apply custom modifiers
+            const modifierStyles = Object.entries(modifiers).reduce((styles, [name, fn]) => {
+              if (fn(day)) {
+                return { ...styles, ...modifiersStyles[name] }
+              }
+              return styles
+            }, {})
+
+            if (!showOutsideDays && isOutsideMonth) {
+              return <div key={i} />
+            }
+
+            return (
+              <button
+                key={i}
+                onClick={() => handleSelectDate(day)}
+                disabled={isDisabled}
+                className={cn(
+                  buttonVariants({ variant: "ghost" }),
+                  "size-8 p-0 font-normal",
+                  isSelected && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+                  isOutsideMonth && "text-muted-foreground opacity-50",
+                  isDisabled && "text-muted-foreground opacity-50 cursor-not-allowed"
+                )}
+                style={modifierStyles}
+              >
+                {format(day, "d")}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </div>
   )
 }
 
