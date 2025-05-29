@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { PlusCircle, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { LogoutButton } from "./components/logout-button";
 
 async function DashboardNav() {
@@ -17,20 +16,14 @@ async function DashboardNav() {
             <Calendar className="h-6 w-6" />
             <span className="font-semibold text-xl">EventEase</span>
           </Link>
-          <nav className="flex items-center gap-4">
+          {/* <nav className="flex items-center gap-4">
             <Link href="/dashboard">
               <Button variant="ghost">My Events</Button>
             </Link>
-            <Link href="/dashboard/create">
-              <Button className="gap-2">
-                <PlusCircle className="h-4 w-4" />
-                Create Event
-              </Button>
-            </Link>
-          </nav>
+          </nav> */}
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-muted-foreground hidden sm:block">
             {user?.email}
           </span>
           <LogoutButton />
