@@ -80,3 +80,8 @@ export async function forgotPassword(email: string): Promise<LoginResponse> {
     };
   }
 }
+
+export async function signOut() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+}

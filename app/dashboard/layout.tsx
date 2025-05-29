@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Calendar, LogOut } from "lucide-react";
+import { PlusCircle, Calendar } from "lucide-react";
+import { LogoutButton } from "./components/logout-button";
 
 async function DashboardNav() {
   const supabase = await createClient();
@@ -32,11 +33,7 @@ async function DashboardNav() {
           <span className="text-sm text-muted-foreground">
             {user?.email}
           </span>
-          <form action="/auth/sign-out" method="post">
-            <Button variant="ghost" size="icon">
-              <LogOut className="h-5 w-5" />
-            </Button>
-          </form>
+          <LogoutButton />
         </div>
       </div>
     </header>
