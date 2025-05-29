@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { MoreVertical, Pencil, Trash2, Share } from "lucide-react";
 import Link from "next/link";
 import { deleteEvent } from "../actions/event";
 
@@ -32,6 +32,12 @@ export function EventActions({ eventId }: EventActionsProps) {
           <Link href={`/dashboard/${eventId}/edit`} className="flex items-center">
             <Pencil className="mr-2 h-4 w-4" />
             Edit
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={`/event/${eventId}`} className="flex items-center">
+            <Share className="mr-2 h-4 w-4" />
+            Share
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem 
