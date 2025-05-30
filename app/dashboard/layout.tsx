@@ -46,11 +46,11 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <>
       <DashboardNav />
       <main className="flex-1 container max-w-screen-2xl mx-auto py-8 px-4">
         {children}
       </main>
-    </div>
+    </>
   );
 } 
