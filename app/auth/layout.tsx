@@ -11,7 +11,8 @@ export default function AuthLayout({
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b">
         <div className="container max-w-screen-2xl mx-auto flex h-16 items-center px-4">
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <Calendar className="h-6 w-6" />
             <span className="font-semibold text-xl">EventEase</span>
           </Link>
         </div>
