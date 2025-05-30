@@ -7,11 +7,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Calendar, PlusCircle } from "lucide-react";
+import { Calendar, PlusCircle, Users, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { EventCalendar } from "./components/event-calendar";
 import { EventCard } from "./components/event-card";
 
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date_time: string;
+  location?: string;
+  owner_id: string;
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -20,29 +28,46 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
-  // Get all events: owned by user OR has user's RSVP
-  const [ownedEventsResponse, rsvpsResponse] = await Promise.all([
-    supabase
-      .from("events")
-      .select("*")
-      .eq("owner_id", user.id)
-      .order("date_time", { ascending: true }),
+  // First get owned events
+  const { data: ownedEvents } = await supabase
+    .from("events")
+    .select("*")
+    .eq("owner_id", user.id)
+    .order("date_time", { ascending: true });
+
+  const userEvents = ownedEvents || [];
+
+  // Then get RSVPs and total attendees
+  const [rsvpsResponse, totalAttendeesResponse] = await Promise.all([
     supabase
       .from("events")
       .select("*, rsvps!inner(*)")
       .eq("rsvps.attendee_email", user.email)
-      .order("date_time", { ascending: true })
+      .order("date_time", { ascending: true }),
+    supabase
+      .from("rsvps")
+      .select("event_id")
+      .in("event_id", userEvents.map(event => event.id))
   ]);
 
+  // Get RSVP events
+  const rsvpEvents = (rsvpsResponse.data || []) as Event[];
+
   // Combine and deduplicate events
-  const ownedEvents = ownedEventsResponse.data || [];
-  const rsvpEvents = rsvpsResponse.data || [];
   const allEventIds = new Set();
-  const allEvents = [...ownedEvents, ...rsvpEvents].filter(event => {
+  const allEvents = [...userEvents, ...rsvpEvents].filter((event: Event) => {
     if (allEventIds.has(event.id)) return false;
     allEventIds.add(event.id);
-    return true;
+    // Only include events that are in the future or today
+    return new Date(event.date_time) >= new Date(new Date().setHours(0, 0, 0, 0));
   }).sort((a, b) => new Date(a.date_time).getTime() - new Date(b.date_time).getTime());
+
+  // Calculate analytics
+  const totalEvents = userEvents.length;
+  const totalAttendees = totalAttendeesResponse.data?.length || 0;
+  const upcomingEvents = userEvents.filter(
+    (event: Event) => new Date(event.date_time) >= new Date(new Date().setHours(0, 0, 0, 0))
+  ).length;
 
   return (
     <div className="space-y-8">
@@ -55,7 +80,7 @@ export default async function DashboardPage() {
         </div>
         <Link href="/dashboard/create">
           <Button>
-            <PlusCircle className="h-4 w-4" />
+            <PlusCircle className="0h-4 w-4" />
             <span className="hidden sm:block">Create Event</span>
           </Button>
         </Link>
@@ -64,7 +89,52 @@ export default async function DashboardPage() {
       <div className="grid gap-8 md:grid-cols-7">
         <div className="md:col-span-4">
           <EventCalendar events={allEvents} />
-        </div>  
+          
+          {/* Analytics Widgets */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+            <Link href="/dashboard/analytics">
+              <Card className="hover:border-primary/50 transition-colors">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-muted-foreground">Total Events</p>
+                      <p className="text-2xl font-bold">{totalEvents}</p>
+                    </div>
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/dashboard/analytics">
+              <Card className="hover:border-primary/50 transition-colors">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-muted-foreground">Total Attendees</p>
+                      <p className="text-2xl font-bold">{totalAttendees}</p>
+                    </div>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/dashboard/analytics">
+              <Card className="hover:border-primary/50 transition-colors">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-muted-foreground">Upcoming Events</p>
+                      <p className="text-2xl font-bold">{upcomingEvents}</p>
+                    </div>
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+        </div>
 
         <div className="md:col-span-3 space-y-6">
           <Card>
