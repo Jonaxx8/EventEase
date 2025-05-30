@@ -4,9 +4,9 @@ import { stringify } from 'csv-stringify/sync';
 
 export async function GET(
   request: Request,
-  { params }: { params: { eventId: string } }
+  { params }: { params: Promise<{ eventId: string }> }
 ) {
-  const { eventId } = params;
+  const { eventId } = await params;
 
   if (!eventId) {
     return new NextResponse("Event ID is required", { status: 400 });

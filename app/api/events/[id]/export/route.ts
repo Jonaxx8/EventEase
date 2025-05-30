@@ -4,11 +4,11 @@ import { stringify } from 'csv-stringify/sync';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const eventId = params.id;
+  const { id } = await params;
 
-  if (!eventId) {
+  if (!id) {
     return new NextResponse("Event ID is required", { status: 400 });
   }
 
@@ -24,7 +24,7 @@ export async function GET(
   const { data: event } = await supabase
     .from("events")
     .select("*")
-    .eq("id", eventId)
+    .eq("id", id)
     .eq("owner_id", user.id)
     .single();
 
@@ -36,7 +36,7 @@ export async function GET(
   const { data: rsvps } = await supabase
     .from("rsvps")
     .select("*")
-    .eq("event_id", eventId)
+    .eq("event_id", id)
     .order("timestamp", { ascending: true });
 
   if (!rsvps || rsvps.length === 0) {

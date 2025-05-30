@@ -7,9 +7,9 @@ import { RsvpForm } from "./rsvp-form";
 import Link from "next/link";
 
 interface EventPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export default async function EventPage({ params }: EventPageProps) {
