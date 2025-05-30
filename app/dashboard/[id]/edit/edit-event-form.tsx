@@ -95,6 +95,13 @@ export function EditEventForm({ event }: EditEventFormProps) {
     }
   }
 
+  const handleDiscard = () => {
+    if (form.formState.isDirty && !confirm("Are you sure you want to discard your changes?")) {
+      return;
+    }
+    router.push("/dashboard");
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -135,7 +142,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
         <div className="grid gap-6 md:grid-cols-2">
           <FormField
             control={form.control}
-            name="date_time"
+            name="location"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Location</FormLabel>
@@ -150,9 +157,6 @@ export function EditEventForm({ event }: EditEventFormProps) {
             )}
           />
 
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
           <FormField
             control={form.control}
             name="date_time"
@@ -162,16 +166,26 @@ export function EditEventForm({ event }: EditEventFormProps) {
                 <FormControl>
                   <Input type="datetime-local" {...field} />
                 </FormControl>
+                <FormDescription>
+                  The date and time of the event
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row">
           <Button type="submit" className="flex-1" disabled={isLoading}>
             {isLoading ? "Saving..." : "Save Changes"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleDiscard}
+            disabled={isLoading}
+          >
+            Discard Changes
           </Button>
           <Button
             type="button"

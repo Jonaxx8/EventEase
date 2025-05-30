@@ -2,8 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EditEventForm } from "./edit-event-form";
-// import { ArrowLeft } from "lucide-react";
-// import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface EditEventPageProps {
   params: Promise<{
@@ -27,10 +28,12 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
   return (
     <div className="space-y-8">
       <div className="flex gap-4">
-        {/* <Button type="button" variant="outline" onClick={() => redirect("/dashboard")}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Dashboard
-        </Button> */}
+        <Button asChild variant="outline">
+          <Link href="/dashboard">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Dashboard
+          </Link>
+        </Button>
       </div>
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Edit Event</h1>

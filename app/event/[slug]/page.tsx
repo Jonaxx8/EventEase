@@ -7,19 +7,20 @@ import { RsvpForm } from "./rsvp-form";
 import Link from "next/link";
 
 interface EventPageProps {
-  params: Promise<{
-    id: string;
-  }>;
+  params: {
+    slug: string;
+  };
 }
 
 export default async function EventPage({ params }: EventPageProps) {
   const supabase = await createClient();
-  const { id } = await params;
-  // Get event details
+  const { slug } = await params;
+  
+  // Get event details using public_slug
   const { data: event } = await supabase
     .from("events")
     .select("*")
-    .eq("id", id)
+    .eq("public_slug", slug)
     .single();
 
   if (!event) {

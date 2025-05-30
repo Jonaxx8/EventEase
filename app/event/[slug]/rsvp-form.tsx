@@ -136,4 +136,4 @@ export function RsvpForm({ eventId, eventDetails }: RsvpFormProps) {
       </form>
     </Form>
   );
-}
+} 

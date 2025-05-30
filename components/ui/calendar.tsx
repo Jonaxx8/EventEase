@@ -77,8 +77,8 @@ function Calendar({
             <button
               onClick={handleNextMonth}
               className={cn(
-                buttonVariants({ variant: "outline" }),
-                "size-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          buttonVariants({ variant: "outline" }),
+          "size-7 bg-transparent p-0 opacity-50 hover:opacity-100"
               )}
             >
               <ChevronRight className="size-4" />
@@ -117,7 +117,7 @@ function Calendar({
                 onClick={() => handleSelectDate(day)}
                 disabled={isDisabled}
                 className={cn(
-                  buttonVariants({ variant: "ghost" }),
+          buttonVariants({ variant: "ghost" }),
                   "size-8 p-0 font-normal",
                   isSelected && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
                   isOutsideMonth && "text-muted-foreground opacity-50",
