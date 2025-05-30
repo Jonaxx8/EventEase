@@ -21,6 +21,13 @@ export function EventActions({ eventId, publicSlug }: EventActionsProps) {
     e.stopPropagation();
   };
 
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
+      await deleteEvent(eventId);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild onClick={handleClick}>
@@ -42,15 +49,12 @@ export function EventActions({ eventId, publicSlug }: EventActionsProps) {
         <DropdownMenuItem asChild>
           <Link href={`/event/${publicSlug}`} className="flex items-center" onClick={handleClick}>
             <Share className="mr-2 h-4 w-4" />
-            Share
+            View
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem 
           className="text-destructive flex items-center"
-          onClick={(e) => {
-            e.stopPropagation();
-            deleteEvent(eventId);
-          }}
+          onClick={handleDelete}
         >
           <Trash2 className="mr-2 h-4 w-4" />
           Delete

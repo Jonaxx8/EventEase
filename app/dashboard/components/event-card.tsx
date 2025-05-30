@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { Role } from "@/enums/role";
 
 interface Event {
     id: string;
@@ -17,83 +18,71 @@ interface Event {
     location?: string;
     public_slug: string;
     description?: string;
+    owner_id: string;
 }
 
-export function EventCard({ event }: { event: Event }) {
-    const [isOpen, setIsOpen] = useState(false);
-    const shareableLink = `${process.env.NEXT_PUBLIC_APP_URL}/event/${event.public_slug}`;
+interface EventCardProps {
+    event: Event;
+    userRole: string;
+    isOwner: boolean;
+}
 
-    const copyLink = async () => {
-      await navigator.clipboard.writeText(shareableLink);
-      setIsOpen(false);
-      toast.success('Link copied to clipboard');
+export function EventCard({ event, userRole, isOwner }: EventCardProps) {
+    const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+    const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/event/${event.public_slug}`;
+
+    const handleCopyLink = () => {
+        navigator.clipboard.writeText(eventUrl);
+        toast.success("Link copied to clipboard");
     };
 
-    return (
-      <>
-        <Card key={event.id} className="group cursor-pointer" onClick={() => setIsOpen(true)}>
-          <CardContent className="p-4">
-            <div className="flex items-start justify-between">
-              <div className="space-y-2">
-                <h3 className="font-semibold line-clamp-1">
-                  {event.title}
-                </h3>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  {format(new Date(event.date_time), "EEEE, MMMM d, yyyy 'at' h:mm a")}
-                </div>
-                {event.location && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-2 h-4 w-4" />
-                    {event.location}
-                  </div>
-                )}
-              </div>
-              <EventActions eventId={event.id} publicSlug={event.public_slug} />
-            </div>
-          </CardContent>
-        </Card>
+    // Allow event owners to manage any event, and owners to manage their own events
+    const canManageEvent = userRole === Role.ADMIN || userRole === Role.EVENT_OWNER || isOwner;
 
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>{event.title}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="flex items-center text-sm">
-                <Calendar className="mr-2 h-4 w-4" />
-                {format(new Date(event.date_time), "EEEE, MMMM d, yyyy 'at' h:mm a")}
-              </div>
-              {event.location && (
-                <div className="flex items-center text-sm">
-                  <MapPin className="mr-2 h-4 w-4" />
-                  {event.location}
+    return (
+        <Card className="group relative">
+            <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                        <h3 className="font-semibold leading-none">{event.title}</h3>
+                        <p className="text-sm text-muted-foreground flex items-center">
+                            <Calendar className="mr-1 h-4 w-4" />
+                            {format(new Date(event.date_time), "PPP p")}
+                        </p>
+                        {event.location && (
+                            <p className="text-sm text-muted-foreground flex items-center">
+                                <MapPin className="mr-1 h-4 w-4" />
+                                {event.location}
+                            </p>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsShareDialogOpen(true)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                            <LinkIcon className="h-4 w-4" />
+                        </Button>
+                        {canManageEvent && (
+                            <EventActions eventId={event.id} publicSlug={event.public_slug} />
+                        )}
+                    </div>
                 </div>
-              )}
-              {event.description && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium mb-2">About</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {event.description}
-                  </p>
-                </div>
-              )}
-              <div className="mt-6">
-                <h4 className="text-sm font-medium mb-2">Share with attendees</h4>
-                <div className="flex gap-2">
-                  <Input 
-                    value={shareableLink}
-                    readOnly
-                    className="flex-1"
-                  />
-                  <Button onClick={copyLink} size="sm">
-                    <LinkIcon className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </>
+            </CardContent>
+
+            <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Share Event</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex gap-2">
+                        <Input value={eventUrl} readOnly />
+                        <Button onClick={handleCopyLink}>Copy</Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </Card>
     );
 }
