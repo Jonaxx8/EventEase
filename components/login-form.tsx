@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { login } from "@/app/auth/actions/auth";
 import { CalendarDays } from "lucide-react";
+import { validateEmail } from "@/lib/utils";
 
 export function LoginForm({
   className,
@@ -29,10 +30,18 @@ export function LoginForm({
     setIsLoading(true);
     setError(null);
 
+    const emailValidation = validateEmail(email);
+
+    if (!emailValidation.isValid) {
+      setError(emailValidation.error || "Invalid email");
+      setIsLoading(false);
+      return;
+    }
+
     const response = await login(email, password);
     
     if (response.error) {
-      setError(response.error);
+      setError(response.error || "Invalid email or password");
     } else {
       router.push("/dashboard");
     }

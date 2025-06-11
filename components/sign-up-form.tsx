@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { signUp } from "@/app/auth/actions/auth";
 import { CalendarDays } from "lucide-react";
+import { validateEmail, validatePassword, validatePasswordConfirmation } from "@/lib/utils";
 
 export function SignUpForm({
   className,
@@ -27,8 +28,24 @@ export function SignUpForm({
     setIsLoading(true);
     setError(null);
 
-    if (password !== repeatPassword) {
-      setError("Passwords do not match");
+    const emailValidation = validateEmail(email);
+    const passwordValidation = validatePassword(password);
+    const passwordConfirmationValidation = validatePasswordConfirmation(password, repeatPassword);
+
+    if (!emailValidation.isValid) {
+      setError(emailValidation.error || "Invalid email");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.error || "Invalid password");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!passwordConfirmationValidation.isValid) {
+      setError(passwordConfirmationValidation.error || "Passwords do not match");
       setIsLoading(false);
       return;
     }
