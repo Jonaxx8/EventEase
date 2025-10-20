@@ -24,10 +24,10 @@ export async function GET() {
       success: true,
       message: "Supabase ping successful ✅",
     });
-  } catch (error: any) {
-    console.error("Ping failed:", error.message);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { success: false, message: "Ping failed ❌", error: error.message },
+      { success: false, message: "Ping failed ❌", error: errorMessage },
       { status: 500 }
     );
   }
